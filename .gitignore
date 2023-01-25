@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+x64
+X64
+.vs
+Debug
+debug
+
+!detours.lib
