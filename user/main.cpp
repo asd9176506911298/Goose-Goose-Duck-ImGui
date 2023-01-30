@@ -40,9 +40,14 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 // Set the name of your log file here
 extern const LPCWSTR LOG_FILE = L"il2cpp-log.txt";
 
+bool test = false;;
 bool zoom = false;
 bool fog = false;
 float zoomValue = 5;
+float dist = 3.8;
+
+bool once = false;
+
 void dLocalPlayer_Update(LocalPlayer* __this, MethodInfo* method)
 {   
     if(__this)
@@ -53,9 +58,57 @@ void dLocalPlayer_Update(LocalPlayer* __this, MethodInfo* method)
             LocalPlayer_ResetOrthographicSize(__this, method);
 
         if(fog)
-            __this->fields.Player->fields.fogOfWarEnabled = false;
+        {
+            if (!once)
+            {
+                auto roof = (*LobbySceneHandler__TypeInfo)->static_fields->Instance->fields.roofHandler;
+                auto blackGameObject = (*LobbySceneHandler__TypeInfo)->static_fields->Instance->fields.blackGameObject;
+                auto shader = __this->fields.fogOfWar->fields.shader;
+                auto chatButton = (__this->fields.playerUI->fields.chatButton);
+                
+                //__this->fields.fogOfWar->fields.baseViewDistance = ObscuredFloat_op_Implicit(100, 0);
+                GameObject_SetActive(blackGameObject, 0, 0);
+
+                //__this->fields.Player->fields.fogOfWarEnabled = false;
+                //__this->fields.fogOfWar->fields.layerMask.m_Mask = 0;
+                //__this->fields.fogOfWar->fields.GOJHHHKPIIP = ObscuredInt_op_Implicit(0, 0);
+                //RoofHandler_BLEBCLBOFPO(roof, 1, 0);
+                RoofHandler_APIGIOMLKBN(roof, 1, 0);
+                
+                //GameObject_SetActive(chatButton, 1, 0);
+                //GameObject_SetActive(shader, 0, 0);
+                once = true;
+            }
+            
+        }
         else
-            __this->fields.Player->fields.fogOfWarEnabled = true;
+        {
+            //__this->fields.fogOfWar->fields.layerMask.m_Mask = 131090;
+            //__this->fields.fogOfWar->fields.GOJHHHKPIIP = ObscuredInt_op_Implicit(131090, 0);
+            //__this->fields.fogOfWar->fields.baseViewDistance = ObscuredFloat_op_Implicit(3.8f, 0);
+        }
+
+        if (test)
+        {
+            
+            //RoofHandler_NDFCNOCMIND(roof, 1, 0);
+            //RoofHandler_NCECPPCDJIB(roof, 1, 0);
+            //RoofHandler_JOOOCMJHGHM(roof, 1, 0);
+            
+            //RoofHandler_MONMEBHCIKM(roof, 1, 0);
+            //RoofHandler_IJDCHKBMJBJ(roof, 1, 0);
+        }
+        //else
+        //{
+        //    auto roof = (*LobbySceneHandler__TypeInfo)->static_fields->Instance->fields.roofHandler;
+        //    RoofHandler_NDFCNOCMIND(roof, 0, 0);
+        //    RoofHandler_NCECPPCDJIB(roof, 0, 0);
+        //    RoofHandler_JOOOCMJHGHM(roof, 0, 0);
+        //    RoofHandler_APIGIOMLKBN(roof, 0, 0);
+        //    RoofHandler_MONMEBHCIKM(roof, 0, 0);
+        //    RoofHandler_IJDCHKBMJBJ(roof, 0, 0);
+        //}
+        
     }
 
     LocalPlayer_Update(__this, method);
@@ -66,7 +119,7 @@ LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
         return true;
 
-    CallWindowProc(oWndProc, hWnd, msg, wParam, lParam);
+    return CallWindowProc(oWndProc, hWnd, msg, wParam, lParam);
 }
 
 bool init = false;
@@ -100,13 +153,16 @@ HRESULT __stdcall dPresent(IDXGISwapChain* This, UINT SyncInterval, UINT Flags)
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::SetNextWindowSize(ImVec2(200, 100));
+    ImGui::SetNextWindowSize(ImVec2(300, 200));
     ImGui::Begin("Test");
 
-    ImGui::Checkbox("fogOfWar", &fog);
+    ImGui::Checkbox("fogOfWar", &fog); ImGui::SameLine();
+    ImGui::SliderFloat("##dist value", &dist, 1, 20);
     ImGui::Checkbox("Zoom", &zoom);
     ImGui::SameLine();
     ImGui::SliderFloat("##zoom value", &zoomValue, 0.5, 40);
+
+    ImGui::Checkbox("test", &test);
 
 
     ImGui::End();
@@ -161,9 +217,9 @@ void Run(HMODULE hModule)
     CreateD3D11Device();
     // If you would like to output to a new console window, use il2cppi_new_console() to open one and redirect stdout
     //il2cppi_new_console();
-    AllocConsole();
-    FILE* f;
-    freopen_s(&f, "CONOUT$", "w", stdout);
+    //AllocConsole();
+    //FILE* f;
+    //freopen_s(&f, "CONOUT$", "w", stdout);
 
     // Place your custom code here
     DetourTransactionBegin();
@@ -172,12 +228,15 @@ void Run(HMODULE hModule)
     DetourAttach((LPVOID*)&oPresent, dPresent);
     HOOKFUNC(LocalPlayer_Update);
 
-
+    
     DetourTransactionCommit();
 
     while (!GetAsyncKeyState(VK_END))
     {
+        //if (GetAsyncKeyState(VK_NUMPAD1) & 1)
+        //    test = !test;
 
+        
 
         Sleep(50);
     }
@@ -186,7 +245,9 @@ void Run(HMODULE hModule)
     DetourUpdateThread(GetCurrentThread());
 
     DetourDetach((LPVOID*)&oPresent, dPresent);
+
     UNHOOKFUNC(LocalPlayer_Update);
+
     DetourTransactionCommit();
 
     ImGui_ImplDX11_Shutdown();
@@ -200,8 +261,8 @@ void Run(HMODULE hModule)
     SetWindowLongPtr(window, GWLP_WNDPROC, (LONG_PTR)oWndProc);
     Sleep(200);
 
-    fclose(f);
-    FreeConsole();
+    //fclose(f);
+    //FreeConsole();
     Sleep(100);
     FreeLibraryAndExitThread(hModule, 0);
     
