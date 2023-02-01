@@ -66,6 +66,9 @@ void dLocalPlayer_Update(LocalPlayer* __this, MethodInfo* method)
             auto shader = __this->fields.fogOfWar->fields.shader;
             auto fogofwar = (__this->fields.fogOfWar);
 
+            if (roof)
+                RoofHandler_NAODGMMMIHL(roof, 1, 0);    //Remove Roof
+
             GameObject_SetActive(blackGameObject, 0, 0);//blackGameObject
 
             __this->fields.fogOfWar->fields.baseViewDistance = ObscuredFloat_op_Implicit(100, 0);    //ViewDistance
@@ -73,7 +76,6 @@ void dLocalPlayer_Update(LocalPlayer* __this, MethodInfo* method)
 
             fogofwar->fields.LFCAGPPBAAH = 1;                 //Stop Calculate Maybe?
 
-            RoofHandler_NAODGMMMIHL(roof, 1, 0);              //Remove Roof
             FogOfWarHandler_UpdateFieldOfView(fogofwar, 1, 0);//Update View
             GameObject_SetActive(shader, 0, 0);               //Remove Shader
         }
@@ -93,9 +95,12 @@ void dLocalPlayer_Update(LocalPlayer* __this, MethodInfo* method)
 
 void dUICooldownButton_Update(UICooldownButton* __this, MethodInfo* method)
 {
-    if (b_enableNoSkillCoolDown)
+    if(__this)
     {
-        UICooldownButton_set_Cooldown(__this, ObscuredFloat_op_Implicit(0, 0), 0);
+        if (b_enableNoSkillCoolDown)
+        {
+            UICooldownButton_set_Cooldown(__this, ObscuredFloat_op_Implicit(0, 0), 0);
+        }
     }
 
     UICooldownButton_Update(__this, method);
