@@ -4,4 +4,4 @@ Simple Zoom and Disable FogOfWar
 
 Press End to Eject
 
-![ScreenShot](https://user-images.githubusercontent.com/35301327/216079490-68e2bff7-5682-4ded-bb91-751cf1f95d4f.png)
+![ScreenShot](https://user-images.githubusercontent.com/35301327/216099680-90360a2a-b4a8-458a-ae55-249888669475.png)
