@@ -41,47 +41,49 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 extern const LPCWSTR LOG_FILE = L"il2cpp-log.txt";
 
 
+bool b_enableFog = false;
+bool b_enableSpeed = false;
+bool b_enableZoom = false;
 
-bool zoom = false;
-bool fog = false;
-float zoomValue = 5;
+float f_zoomSize = 5;
+float f_movementSpeed = 5;
 
-bool once = false;
 
 void dLocalPlayer_Update(LocalPlayer* __this, MethodInfo* method)
 {
     if (__this)
     {
-        if (zoom)
-            LocalPlayer_OverrideOrthographicSize(__this, zoomValue, method);
+        if (b_enableZoom)
+            LocalPlayer_OverrideOrthographicSize(__this, f_zoomSize, method);
+        else
+            LocalPlayer_ResetOrthographicSize(__this, 0);
 
-        if (fog)
+        if (b_enableFog)
         {
             auto roof = (*LobbySceneHandler__TypeInfo)->static_fields->Instance->fields.roofHandler;
             auto blackGameObject = (*LobbySceneHandler__TypeInfo)->static_fields->Instance->fields.blackGameObject;
             auto shader = __this->fields.fogOfWar->fields.shader;
             auto fogofwar = (__this->fields.fogOfWar);
 
-            GameObject_SetActive(blackGameObject, 0, 0);//黑物件
+            GameObject_SetActive(blackGameObject, 0, 0);//blackGameObject
 
-            __this->fields.fogOfWar->fields.baseViewDistance = ObscuredFloat_op_Implicit(100, 0);    //視野距離
-            __this->fields.fogOfWar->fields.viewDistanceMultiplier = ObscuredFloat_op_Implicit(1, 0);//視野乘
+            __this->fields.fogOfWar->fields.baseViewDistance = ObscuredFloat_op_Implicit(100, 0);    //ViewDistance
+            __this->fields.fogOfWar->fields.viewDistanceMultiplier = ObscuredFloat_op_Implicit(1, 0);//viewDistanceMultiplier
 
-            fogofwar->fields.LFCAGPPBAAH = 1;                 //停止計算? 應該 這個開了光圈就會停留在原地
-                                                              //所以我下面用更新戰爭迷霧 不知道有沒有更好的方法
+            fogofwar->fields.LFCAGPPBAAH = 1;                 //Stop Calculate Maybe?
 
-            RoofHandler_NAODGMMMIHL(roof, 1, 0);              //移除屋頂
-            FogOfWarHandler_UpdateFieldOfView(fogofwar, 1, 0);//更新戰爭迷霧
-            GameObject_SetActive(shader, 0, 0);               //移除陰影
-
-            //fogofwar->fields.flashlightMode = 0;
-            //__this->fields.fogOfWar->fields.CNFEONMONCL = 1; //0xAC
-            //__this->fields.GBGDLECMLJA->fields.m_Lens.FarClipPlane = 10.7;
-            //RoofHandler_MGMMJGICBIL(roof, 1, 0);
-            //__this->fields.Player->fields.fogOfWarEnabled = false;
-            //__this->fields.fogOfWar->fields.layerMask.m_Mask = 0;
-            //__this->fields.fogOfWar->fields.OEDIBJBNENI = ObscuredInt_op_Implicit(0, 0);
-            //RoofHandler_BLEBCLBOFPO(roof, 1, 0);
+            RoofHandler_NAODGMMMIHL(roof, 1, 0);              //Remove Roof
+            FogOfWarHandler_UpdateFieldOfView(fogofwar, 1, 0);//Update View
+            GameObject_SetActive(shader, 0, 0);               //Remove Shader
+        }
+        
+        if (b_enableSpeed)
+        {
+            (*LocalPlayer__TypeInfo)->static_fields->movementSpeed = ObscuredFloat_op_Implicit(f_movementSpeed, 0);
+        }
+        else
+        {
+            (*LocalPlayer__TypeInfo)->static_fields->movementSpeed = ObscuredFloat_op_Implicit(5, 0);
         }
     }
 
@@ -131,10 +133,13 @@ HRESULT __stdcall dPresent(IDXGISwapChain* This, UINT SyncInterval, UINT Flags)
     ImGui::SetNextWindowSize(ImVec2(300, 200));
     ImGui::Begin("Yuki.kaco Test");
 
-    ImGui::Checkbox("RemoveFogOfWar", &fog);
-    ImGui::Checkbox("Zoom", &zoom);
-    ImGui::SameLine();
-    ImGui::SliderFloat("##zoom value", &zoomValue, 0.5, 40);
+    ImGui::Checkbox("RemoveFogOfWar", &b_enableFog);
+
+    ImGui::Checkbox("SpeedValue", &b_enableSpeed); ImGui::SameLine();
+    ImGui::SliderFloat("##SpeedValue", &f_movementSpeed, 5, 15);
+
+    ImGui::Checkbox("Zoom", &b_enableZoom); ImGui::SameLine();
+    ImGui::SliderFloat("##zoom value", &f_zoomSize, 0.5, 40);
 
     ImGui::End();
 
