@@ -1,6 +1,6 @@
 # Goose-Goose-Duck-ImGui
 
-Simple Zoom and Disable FogOfWar 
+Simple Hack
 
 Press End to Eject
 
