@@ -40,79 +40,54 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 // Set the name of your log file here
 extern const LPCWSTR LOG_FILE = L"il2cpp-log.txt";
 
-bool test = false;;
+
+
 bool zoom = false;
 bool fog = false;
 float zoomValue = 5;
-float dist = 3.8;
 
 bool once = false;
 
 void dLocalPlayer_Update(LocalPlayer* __this, MethodInfo* method)
-{   
-    if(__this)
+{
+    if (__this)
     {
         if (zoom)
             LocalPlayer_OverrideOrthographicSize(__this, zoomValue, method);
-        else
-            LocalPlayer_ResetOrthographicSize(__this, method);
 
-        if(fog)
+        if (fog)
         {
-            if (!once)
-            {
-                auto roof = (*LobbySceneHandler__TypeInfo)->static_fields->Instance->fields.roofHandler;
-                auto blackGameObject = (*LobbySceneHandler__TypeInfo)->static_fields->Instance->fields.blackGameObject;
-                auto shader = __this->fields.fogOfWar->fields.shader;
-                auto chatButton = (__this->fields.playerUI->fields.chatButton);
-                
-                //__this->fields.fogOfWar->fields.baseViewDistance = ObscuredFloat_op_Implicit(100, 0);
-                GameObject_SetActive(blackGameObject, 0, 0);
+            auto roof = (*LobbySceneHandler__TypeInfo)->static_fields->Instance->fields.roofHandler;
+            auto blackGameObject = (*LobbySceneHandler__TypeInfo)->static_fields->Instance->fields.blackGameObject;
+            auto shader = __this->fields.fogOfWar->fields.shader;
+            auto fogofwar = (__this->fields.fogOfWar);
 
-                //__this->fields.Player->fields.fogOfWarEnabled = false;
-                //__this->fields.fogOfWar->fields.layerMask.m_Mask = 0;
-                //__this->fields.fogOfWar->fields.GOJHHHKPIIP = ObscuredInt_op_Implicit(0, 0);
-                //RoofHandler_BLEBCLBOFPO(roof, 1, 0);
-                RoofHandler_APIGIOMLKBN(roof, 1, 0);
-                
-                //GameObject_SetActive(chatButton, 1, 0);
-                //GameObject_SetActive(shader, 0, 0);
-                once = true;
-            }
-            
-        }
-        else
-        {
-            //__this->fields.fogOfWar->fields.layerMask.m_Mask = 131090;
-            //__this->fields.fogOfWar->fields.GOJHHHKPIIP = ObscuredInt_op_Implicit(131090, 0);
-            //__this->fields.fogOfWar->fields.baseViewDistance = ObscuredFloat_op_Implicit(3.8f, 0);
-        }
+            GameObject_SetActive(blackGameObject, 0, 0);//黑物件
 
-        if (test)
-        {
-            
-            //RoofHandler_NDFCNOCMIND(roof, 1, 0);
-            //RoofHandler_NCECPPCDJIB(roof, 1, 0);
-            //RoofHandler_JOOOCMJHGHM(roof, 1, 0);
-            
-            //RoofHandler_MONMEBHCIKM(roof, 1, 0);
-            //RoofHandler_IJDCHKBMJBJ(roof, 1, 0);
+            __this->fields.fogOfWar->fields.baseViewDistance = ObscuredFloat_op_Implicit(100, 0);    //視野距離
+            __this->fields.fogOfWar->fields.viewDistanceMultiplier = ObscuredFloat_op_Implicit(1, 0);//視野乘
+
+            fogofwar->fields.LFCAGPPBAAH = 1;                 //停止計算? 應該 這個開了光圈就會停留在原地
+                                                              //所以我下面用更新戰爭迷霧 不知道有沒有更好的方法
+
+            RoofHandler_NAODGMMMIHL(roof, 1, 0);              //移除屋頂
+            FogOfWarHandler_UpdateFieldOfView(fogofwar, 1, 0);//更新戰爭迷霧
+            GameObject_SetActive(shader, 0, 0);               //移除陰影
+
+            //fogofwar->fields.flashlightMode = 0;
+            //__this->fields.fogOfWar->fields.CNFEONMONCL = 1; //0xAC
+            //__this->fields.GBGDLECMLJA->fields.m_Lens.FarClipPlane = 10.7;
+            //RoofHandler_MGMMJGICBIL(roof, 1, 0);
+            //__this->fields.Player->fields.fogOfWarEnabled = false;
+            //__this->fields.fogOfWar->fields.layerMask.m_Mask = 0;
+            //__this->fields.fogOfWar->fields.OEDIBJBNENI = ObscuredInt_op_Implicit(0, 0);
+            //RoofHandler_BLEBCLBOFPO(roof, 1, 0);
         }
-        //else
-        //{
-        //    auto roof = (*LobbySceneHandler__TypeInfo)->static_fields->Instance->fields.roofHandler;
-        //    RoofHandler_NDFCNOCMIND(roof, 0, 0);
-        //    RoofHandler_NCECPPCDJIB(roof, 0, 0);
-        //    RoofHandler_JOOOCMJHGHM(roof, 0, 0);
-        //    RoofHandler_APIGIOMLKBN(roof, 0, 0);
-        //    RoofHandler_MONMEBHCIKM(roof, 0, 0);
-        //    RoofHandler_IJDCHKBMJBJ(roof, 0, 0);
-        //}
-        
     }
 
     LocalPlayer_Update(__this, method);
 }
+
 
 LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -154,16 +129,12 @@ HRESULT __stdcall dPresent(IDXGISwapChain* This, UINT SyncInterval, UINT Flags)
     ImGui::NewFrame();
 
     ImGui::SetNextWindowSize(ImVec2(300, 200));
-    ImGui::Begin("Test");
+    ImGui::Begin("Yuki.kaco Test");
 
-    ImGui::Checkbox("fogOfWar", &fog); ImGui::SameLine();
-    ImGui::SliderFloat("##dist value", &dist, 1, 20);
+    ImGui::Checkbox("RemoveFogOfWar", &fog);
     ImGui::Checkbox("Zoom", &zoom);
     ImGui::SameLine();
     ImGui::SliderFloat("##zoom value", &zoomValue, 0.5, 40);
-
-    ImGui::Checkbox("test", &test);
-
 
     ImGui::End();
 
@@ -227,7 +198,7 @@ void Run(HMODULE hModule)
 
     DetourAttach((LPVOID*)&oPresent, dPresent);
     HOOKFUNC(LocalPlayer_Update);
-
+    
     
     DetourTransactionCommit();
 
@@ -247,6 +218,7 @@ void Run(HMODULE hModule)
     DetourDetach((LPVOID*)&oPresent, dPresent);
 
     UNHOOKFUNC(LocalPlayer_Update);
+    
 
     DetourTransactionCommit();
 
@@ -261,8 +233,8 @@ void Run(HMODULE hModule)
     SetWindowLongPtr(window, GWLP_WNDPROC, (LONG_PTR)oWndProc);
     Sleep(200);
 
-    //fclose(f);
-    //FreeConsole();
+    /*fclose(f);
+    FreeConsole();*/
     Sleep(100);
     FreeLibraryAndExitThread(hModule, 0);
     
