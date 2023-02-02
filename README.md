@@ -4,4 +4,4 @@ Simple Hack
 
 Press End to Eject
 
-![ScreenShot](https://user-images.githubusercontent.com/35301327/216099680-90360a2a-b4a8-458a-ae55-249888669475.png)
+![ScreenShot](https://user-images.githubusercontent.com/35301327/216393667-44f60542-b1f1-487c-9eb2-394608080bcf.png)
