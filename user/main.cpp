@@ -45,6 +45,7 @@ bool b_enableFog = false;
 bool b_enableSpeed = false;
 bool b_enableZoom = false;
 bool b_enableNoSkillCoolDown = false;
+bool b_enableNoClip = false;
 
 float f_zoomSize = 5;
 float f_movementSpeed = 5;
@@ -88,10 +89,21 @@ void dLocalPlayer_Update(LocalPlayer* __this, MethodInfo* method)
         {
             (*LocalPlayer__TypeInfo)->static_fields->movementSpeed = ObscuredFloat_op_Implicit(5, 0);
         }   
+
+        if (b_enableNoClip)
+        {
+            Behaviour_set_enabled((Behaviour*)(*LocalPlayer__TypeInfo)->static_fields->Instance->fields.Player->fields.playerCollider, 0, 0);
+        }
+        else
+        {
+            Behaviour_set_enabled((Behaviour*)(*LocalPlayer__TypeInfo)->static_fields->Instance->fields.Player->fields.playerCollider, 1, 0);
+        }
     }
 
     LocalPlayer_Update(__this, method);
 }
+
+//collider + 0x10 + 0x38 true false
 
 void dUICooldownButton_Update(UICooldownButton* __this, MethodInfo* method)
 {
@@ -151,7 +163,8 @@ HRESULT __stdcall dPresent(IDXGISwapChain* This, UINT SyncInterval, UINT Flags)
 
     ImGui::Checkbox("RemoveFogOfWar", &b_enableFog);
     ImGui::Checkbox("NoSkillCoolDown", &b_enableNoSkillCoolDown);
-
+    ImGui::Checkbox("NoClip", &b_enableNoClip);
+    
     ImGui::Checkbox("SpeedValue", &b_enableSpeed); ImGui::SameLine();
     ImGui::SliderFloat("##SpeedValue", &f_movementSpeed, 5, 15);
 
