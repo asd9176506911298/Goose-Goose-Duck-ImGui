@@ -40,63 +40,78 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 // Set the name of your log file here
 extern const LPCWSTR LOG_FILE = L"il2cpp-log.txt";
 
-
 bool b_enableFog = false;
 bool b_enableSpeed = false;
 bool b_enableZoom = false;
 bool b_enableNoSkillCoolDown = false;
 bool b_enableNoClip = false;
+bool b_enableESPBox = false;
+bool b_enableESPLine = false;
 
 float f_zoomSize = 5;
 float f_movementSpeed = 5;
-
 
 void dLocalPlayer_Update(LocalPlayer* __this, MethodInfo* method)
 {
     if (__this)
     {
-        if (b_enableZoom)
-            LocalPlayer_OverrideOrthographicSize(__this, f_zoomSize, method);
-        else
-            LocalPlayer_ResetOrthographicSize(__this, 0);
-
-        if (b_enableFog)
+        if((*LobbySceneHandler__TypeInfo)->static_fields->InGameScene)
         {
-            auto roof = (*LobbySceneHandler__TypeInfo)->static_fields->Instance->fields.roofHandler;
-            auto blackGameObject = (*LobbySceneHandler__TypeInfo)->static_fields->Instance->fields.blackGameObject;
-            auto shader = __this->fields.fogOfWar->fields.shader;
-            auto fogofwar = (__this->fields.fogOfWar);
+            if ((*LocalPlayer__TypeInfo)->static_fields->Instance)
+                (*LocalPlayer__TypeInfo)->static_fields->Instance->fields.DLKDHICPDNC->fields.m_AnimatedTarget = 0;
 
-            if (roof)
-                RoofHandler_NAODGMMMIHL(roof, 1, 0);    //Remove Roof
+            if (b_enableZoom)
+            {
+                (*LocalPlayer__TypeInfo)->static_fields->Instance->fields.GBGDLECMLJA->fields.m_Lens.OrthographicSize = f_zoomSize;
+                //LocalPlayer_OverrideOrthographicSize(__this, f_zoomSize, method);
+            }
+            else
+            {
+                (*LocalPlayer__TypeInfo)->static_fields->Instance->fields.GBGDLECMLJA->fields.m_Lens.OrthographicSize = 5;
+                //LocalPlayer_ResetOrthographicSize(__this, 0);
+            }
 
-            GameObject_SetActive(blackGameObject, 0, 0);//blackGameObject
+            if (b_enableFog)
+            {
+                auto roof = (*LobbySceneHandler__TypeInfo)->static_fields->Instance->fields.roofHandler;
+                auto blackGameObject = (*LobbySceneHandler__TypeInfo)->static_fields->Instance->fields.blackGameObject;
+                auto shader = __this->fields.fogOfWar->fields.shader;
+                auto fogofwar = (__this->fields.fogOfWar);
 
-            __this->fields.fogOfWar->fields.baseViewDistance = ObscuredFloat_op_Implicit(100, 0);    //ViewDistance
-            __this->fields.fogOfWar->fields.viewDistanceMultiplier = ObscuredFloat_op_Implicit(1, 0);//viewDistanceMultiplier
+                if (roof)
+                    RoofHandler_NAODGMMMIHL(roof, 1, 0);    //Remove Roof
 
-            fogofwar->fields.LFCAGPPBAAH = 1;                 //Stop Calculate Maybe?
+                GameObject_SetActive(blackGameObject, 0, 0);//blackGameObject
 
-            FogOfWarHandler_UpdateFieldOfView(fogofwar, 1, 0);//Update View
-            GameObject_SetActive(shader, 0, 0);               //Remove Shader
-        }
+                __this->fields.fogOfWar->fields.baseViewDistance = ObscuredFloat_op_Implicit(100, 0);    //ViewDistance
+                __this->fields.fogOfWar->fields.viewDistanceMultiplier = ObscuredFloat_op_Implicit(1, 0);//viewDistanceMultiplier
+
+                fogofwar->fields.LFCAGPPBAAH = 1;                 //Stop Calculate Maybe?
+
+                FogOfWarHandler_UpdateFieldOfView(fogofwar, 1, 0);//Update View
+                GameObject_SetActive(shader, 0, 0);               //Remove Shader
+            }
         
-        if (b_enableSpeed)
-        {
-            (*LocalPlayer__TypeInfo)->static_fields->movementSpeed = ObscuredFloat_op_Implicit(f_movementSpeed, 0);
-        }
-        else
-        {
-            (*LocalPlayer__TypeInfo)->static_fields->movementSpeed = ObscuredFloat_op_Implicit(5, 0);
-        }   
+            if (b_enableSpeed)
+            {
+                (*LocalPlayer__TypeInfo)->static_fields->movementSpeed = ObscuredFloat_op_Implicit(f_movementSpeed, 0);
+            }
+            else
+            {
+                (*LocalPlayer__TypeInfo)->static_fields->movementSpeed = ObscuredFloat_op_Implicit(5, 0);
+            }   
 
-        if (b_enableNoClip)
-        {
-            Behaviour_set_enabled((Behaviour*)(*LocalPlayer__TypeInfo)->static_fields->Instance->fields.Player->fields.playerCollider, 0, 0);
-        }
-        else
-        {
-            Behaviour_set_enabled((Behaviour*)(*LocalPlayer__TypeInfo)->static_fields->Instance->fields.Player->fields.playerCollider, 1, 0);
+            if(__this->fields.Player != nullptr)
+            {
+                if (b_enableNoClip)
+                {
+                    Behaviour_set_enabled((Behaviour*)__this->fields.Player->fields.playerCollider, 0, 0);
+                }
+                else
+                {
+                     Behaviour_set_enabled((Behaviour*)__this->fields.Player->fields.playerCollider, 1, 0);
+                }
+            }
         }
     }
 
@@ -125,6 +140,79 @@ LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         return true;
 
     return CallWindowProc(oWndProc, hWnd, msg, wParam, lParam);
+}
+
+ImVec2 GetWindowSize()
+{
+    if (Screen_get_fullScreen(nullptr))
+    {
+        RECT rect;
+        GetWindowRect(window, &rect);
+
+        return { (float)(rect.right - rect.left),  (float)(rect.bottom - rect.top) };
+    }
+
+    return { (float)Screen_get_width(nullptr), (float)Screen_get_height(nullptr) };
+
+}
+
+static ImVec2 winSize;
+static Camera* mainCamera;
+
+void DrawESP()
+{
+    if (!(*LobbySceneHandler__TypeInfo)->static_fields->InGameScene)
+        return;
+
+    ImGui::Begin("Overlay", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground);
+    
+    winSize = GetWindowSize();
+
+    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(winSize);
+
+    auto pDrawList = ImGui::GetWindowDrawList();
+
+    mainCamera = Camera_get_main(0);
+    
+    auto items = ((*PlayerController__TypeInfo)->static_fields->playersListWithAgoraIDs->fields._entries->vector);
+    auto sizes = (*PlayerController__TypeInfo)->static_fields->playersListWithAgoraIDs->fields._count;
+
+    float width;
+    float height;
+
+    if(b_enableZoom)
+    {
+        width = winSize.x / 16.0f / (f_zoomSize / 6.0f);
+        height = winSize.y / 10.0f / (f_zoomSize / 6.0f);
+    }
+    else
+    {
+        width = winSize.x / 16.0f;
+        height = winSize.y / 10.0f;
+    }
+
+    if (items != nullptr && sizes > 0)
+    {
+        auto myPos = (*LocalPlayer__TypeInfo)->static_fields->Instance->fields.Player->fields.FIPBPONCKIE;
+        for (int i = 0; i < sizes; i++)
+        {
+            if (items[i].value && !items[i].value->fields.isLocal)
+            {
+                auto Pos = items[i].value->fields.FIPBPONCKIE;
+                auto Pos2D = Camera_WorldToScreenPoint_1(mainCamera, Pos, 0);
+                auto myPos2D = Camera_WorldToScreenPoint_1(mainCamera, myPos, 0);
+                Vector2 newPos = Vector2{ Pos2D.x, winSize.y - Pos2D.y };
+                Vector2 newmyPos = Vector2{ myPos2D.x, winSize.y - myPos2D.y };
+                if (b_enableESPLine)
+                    pDrawList->AddLine({ newmyPos.x, newmyPos.y }, { newPos.x, newPos.y }, ImColor(255, 0, 0), 1);
+                if (b_enableESPBox)
+                    pDrawList->AddRect({ newPos.x - width / 2, newPos.y - height / 2 }, { newPos.x + width / 2, newPos.y + height / 2 }, ImColor(255, 0, 0));
+            }
+        }
+    }
+
+    ImGui::End();
 }
 
 bool init = false;
@@ -171,6 +259,11 @@ HRESULT __stdcall dPresent(IDXGISwapChain* This, UINT SyncInterval, UINT Flags)
     ImGui::Checkbox("Zoom", &b_enableZoom); ImGui::SameLine();
     ImGui::SliderFloat("##zoom value", &f_zoomSize, 0.5, 40);
 
+    ImGui::Checkbox("ESPBox", &b_enableESPBox);
+    ImGui::Checkbox("ESPLine", &b_enableESPLine);
+
+    DrawESP();
+
     ImGui::End();
 
     ImGui::Render();
@@ -179,7 +272,6 @@ HRESULT __stdcall dPresent(IDXGISwapChain* This, UINT SyncInterval, UINT Flags)
 
     return oPresent(This, SyncInterval, Flags);
 }
-
 
 bool CreateD3D11Device()
 {
