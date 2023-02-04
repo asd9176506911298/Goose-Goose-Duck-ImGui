@@ -3823,3 +3823,4 @@ DO_TYPEDEF(0x03CB9DC8, ISecurityEncodable);
 DO_TYPEDEF(0x03CDAAE0, LobbySceneHandler);
 DO_TYPEDEF(0x03CDB720, LocalPlayer);
 DO_TYPEDEF(0x03CE0178, MainManager);
+DO_TYPEDEF(0x03D084C8, PlayerController);
